@@ -1,4 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Budget Sniper
+
+A simple SMS-based spending tracker that lets you log expenses via SMS. Text your expenses to a phone number and see them tracked in real-time.
+
+## Features
+
+- 📱 SMS-based expense logging
+- 💰 Automatic amount and merchant parsing
+- 📊 Real-time dashboard
+- 🔄 Manual expense entry
+- 📈 Spending analytics
+
+## Tech Stack
+
+- **Frontend**: Next.js 15.5.3 with TypeScript
+- **Backend**: Next.js API Routes
+- **Database**: Supabase (PostgreSQL)
+- **SMS**: Twilio
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel
+
+## Development Learning Notes
+
+### 📚 IMPORTANT: Study SMS Parser Logic (`src/lib/sms-parser.ts`)
+**Key concepts to review:**
+- Regular expressions (`/\$?(\d+(?:\.\d{1,2})?)/g`)
+- String manipulation methods (`replace`, `trim`, `match`)
+- Error handling patterns
+- TypeScript interfaces and return types
+- Input validation and sanitization
+- Test-driven development patterns
+
+**Why this matters:** These are fundamental skills every developer needs for text processing, data validation, and API development.
 
 ## Getting Started
 
@@ -16,9 +48,12 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/types/` - TypeScript interfaces and types
+- `src/lib/` - Utility functions and business logic
+- `src/app/api/` - Next.js API routes
+- `src/app/` - Pages and components
 
 ## Learn More
 
@@ -26,8 +61,6 @@ To learn more about Next.js, take a look at the following resources:
 
 - [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
 ## Deploy on Vercel
 
