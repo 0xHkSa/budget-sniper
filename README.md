@@ -1,23 +1,81 @@
 # Budget Sniper
 
-A simple SMS-based spending tracker that lets you log expenses via SMS. Text your expenses to a phone number and see them tracked in real-time.
+A household SMS-based spending tracker that lets you log expenses via SMS. Text your expenses to a phone number and see them tracked in real-time with beautiful analytics.
 
 ## Features
 
 - 📱 SMS-based expense logging
 - 💰 Automatic amount and merchant parsing
-- 📊 Real-time dashboard
-- 🔄 Manual expense entry
-- 📈 Spending analytics
+- 📊 Real-time dashboard with charts
+- 🏠 Household expense tracking
+- 📈 Spending analytics (pie charts, line graphs)
+- 🌙 Dark/light mode toggle
+- 📱 Responsive design
 
 ## Tech Stack
 
-- **Frontend**: Next.js 15.5.3 with TypeScript
+- **Frontend**: Next.js 15.5.3 + React 19 + TypeScript
 - **Backend**: Next.js API Routes
 - **Database**: Supabase (PostgreSQL)
 - **SMS**: Twilio
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS + shadcn/ui
+- **Charts**: Recharts
 - **Deployment**: Vercel
+
+## Current Status ✅
+
+### Completed Features:
+- ✅ **Full-stack dashboard** with real data integration
+- ✅ **Beautiful charts** (pie chart + line chart) with 25+ mock expenses
+- ✅ **Dark/light mode** with professional black/white theme
+- ✅ **Supabase integration** - Real database connection
+- ✅ **SMS parsing logic** - Extracts amount + merchant from text
+- ✅ **API endpoints** - GET/POST expenses with proper error handling
+- ✅ **SMS webhook** - Ready for Twilio integration
+- ✅ **Responsive design** - Works on desktop and mobile
+
+### Database Schema:
+```sql
+-- Households table
+CREATE TABLE households (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  name TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Expenses table
+CREATE TABLE expenses (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  household_id UUID REFERENCES households(id),
+  amount DECIMAL(10,2) NOT NULL,
+  merchant TEXT NOT NULL,
+  category TEXT,
+  date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  phone_number TEXT NOT NULL,
+  raw_message TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+### API Endpoints:
+- `GET /api/expenses` - Fetch all expenses from database
+- `POST /api/expenses` - Create new expense
+- `POST /api/webhook/sms` - Twilio SMS webhook (ready for testing)
+
+## Next Steps 🚀
+
+### Immediate (When Twilio Account Verified):
+1. **Buy Twilio phone number** (~$1/month)
+2. **Configure webhook URL** in Twilio console
+3. **Test SMS flow** - Text → Database → Dashboard
+4. **Deploy to Vercel** for live testing
+
+### Future Enhancements:
+- **User authentication** with Supabase Auth
+- **Household management** (invite users, multiple households)
+- **AI categorization** (OpenAI API for smart category detection)
+- **Advanced analytics** (monthly trends, budget alerts)
+- **Mobile app** (React Native or PWA)
 
 ## Development Learning Notes
 
@@ -34,19 +92,28 @@ A simple SMS-based spending tracker that lets you log expenses via SMS. Text you
 
 ## Getting Started
 
-First, run the development server:
-
+1. **Install dependencies:**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Set up environment variables** (`.env.local`):
+```env
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_PHONE_NUMBER=your_twilio_phone_number
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your_nextauth_secret
+```
+
+3. **Run development server:**
+```bash
+npm run dev
+```
+
+4. **Open [http://localhost:3000](http://localhost:3000)** to see the dashboard
 
 ## Project Structure
 
@@ -54,16 +121,22 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 - `src/lib/` - Utility functions and business logic
 - `src/app/api/` - Next.js API routes
 - `src/app/` - Pages and components
+- `src/components/ui/` - shadcn/ui components
+
+## Architecture Overview
+
+```
+SMS → Twilio → Webhook → Parse → Database → Dashboard
+  ↓
+User texts "15.50 starbucks" → Parsed → Saved → Charts update
+```
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Twilio SMS API](https://www.twilio.com/docs/sms)
+- [shadcn/ui Components](https://ui.shadcn.com/)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Last updated: [Current Date] - Ready for Twilio phone number testing*

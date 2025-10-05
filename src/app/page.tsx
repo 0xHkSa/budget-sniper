@@ -213,7 +213,7 @@ export default function Home() {
                         cy="50%"
                         labelLine={false}
                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        outerRadius={80}
+                        outerRadius={120}
                         fill="#8884d8"
                         dataKey="value"
                       >
@@ -223,15 +223,12 @@ export default function Home() {
                       </Pie>
                       <Tooltip 
                         contentStyle={{
-                          backgroundColor: theme === 'dark' ? '#000000' : '#ffffff',
-                          border: theme === 'dark' ? '1px solid #ffffff' : '1px solid #000000',
-                          borderRadius: '8px',
-                          color: theme === 'dark' ? '#ffffff' : '#000000'
+                          backgroundColor: 'transparent',
+                          border: 'none',
+                          boxShadow: 'none'
                         }}
-                        formatter={(value: number) => [`$${value.toFixed(2)}`, 'Amount']}
-                        labelStyle={{
-                          color: theme === 'dark' ? '#ffffff' : '#000000'
-                        }}
+                        formatter={(value: number, name) => [`$${value.toFixed(2)}`, '']}
+                        labelFormatter={() => ''}
                       />
                     </PieChart>
                   </ResponsiveContainer>
