@@ -41,11 +41,30 @@ export default function Home() {
     }
   }
 
+  // Helper function to get user name from phone number
+  function getUserName(phoneNumber: string): string {
+    switch (phoneNumber) {
+      case '+1234567890':
+        return 'You'
+      case '+1987654321':
+        return 'Sarah'
+      default:
+        return 'Unknown User'
+    }
+  }
+
   // Calculate metrics from real data
   const totalSpent = expenses.reduce((sum, expense) => sum + expense.amount, 0)
   const avgDaily = expenses.length > 0 ? totalSpent / expenses.length : 0
   const lastExpense = expenses.length > 0 ? expenses[0] : null
   const expenseCount = expenses.length
+
+  // Calculate user-specific metrics
+  const yourExpenses = expenses.filter(expense => expense.phone_number === '+1234567890')
+  const sarahExpenses = expenses.filter(expense => expense.phone_number === '+1987654321')
+  
+  const yourTotal = yourExpenses.reduce((sum, expense) => sum + expense.amount, 0)
+  const sarahTotal = sarahExpenses.reduce((sum, expense) => sum + expense.amount, 0)
 
   // Prepare chart data
   const categoryData = expenses.reduce((acc, expense) => {
@@ -64,18 +83,29 @@ export default function Home() {
     color: getCategoryColor(name)
   }))
 
-  const dailyData = expenses.reduce((acc, expense) => {
+  // Prepare multi-user daily spending data
+  const dailyDataByUser = expenses.reduce((acc, expense) => {
     const date = new Date(expense.date).toLocaleDateString()
-    if (acc[date]) {
-      acc[date] += expense.amount
-    } else {
-      acc[date] = expense.amount
+    const userName = getUserName(expense.phone_number)
+    
+    if (!acc[date]) {
+      acc[date] = { date }
     }
+    
+    if (!acc[date][userName]) {
+      acc[date][userName] = 0
+    }
+    
+    acc[date][userName] += expense.amount
     return acc
-  }, {} as Record<string, number>)
+  }, {} as Record<string, any>)
 
-  const barChartData = Object.entries(dailyData)
-    .map(([date, amount]) => ({ date, amount: parseFloat(amount.toFixed(2)) }))
+  const lineChartData = Object.values(dailyDataByUser)
+    .map(dayData => ({
+      ...dayData,
+      'You': dayData['You'] ? parseFloat(dayData['You'].toFixed(2)) : 0,
+      'Sarah': dayData['Sarah'] ? parseFloat(dayData['Sarah'].toFixed(2)) : 0
+    }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
   function getCategoryColor(category: string) {
@@ -93,7 +123,7 @@ export default function Home() {
   if (!mounted) return null
 
   if (loading) {
-    return (
+  return (
       <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black dark:border-white mx-auto mb-4"></div>
@@ -152,21 +182,31 @@ export default function Home() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gray-50 dark:bg-black border-gray-200 dark:border-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-white">Total Spent</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-white">Your Spending</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-black dark:text-white">${totalSpent.toFixed(2)}</div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Total spent</p>
+              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">${yourTotal.toFixed(2)}</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{yourExpenses.length} expenses</p>
             </CardContent>
           </Card>
 
           <Card className="bg-gray-50 dark:bg-black border-gray-200 dark:border-white">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-white">Avg Daily</CardTitle>
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-white">Sarah's Spending</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-black dark:text-white">${avgDaily.toFixed(2)}</div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Per expense</p>
+              <div className="text-2xl font-bold text-red-600 dark:text-red-400">${sarahTotal.toFixed(2)}</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{sarahExpenses.length} expenses</p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-gray-50 dark:bg-black border-gray-200 dark:border-white">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-gray-600 dark:text-white">Total Household</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-black dark:text-white">${totalSpent.toFixed(2)}</div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">{expenseCount} total expenses</p>
             </CardContent>
           </Card>
 
@@ -179,18 +219,8 @@ export default function Home() {
                 {lastExpense ? `$${lastExpense.amount.toFixed(2)}` : '$0.00'}
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {lastExpense ? lastExpense.merchant : 'No expenses'}
+                {lastExpense ? `${getUserName(lastExpense.phone_number)} - ${lastExpense.merchant}` : 'No expenses'}
               </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gray-50 dark:bg-black border-gray-200 dark:border-white">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600 dark:text-white">Expenses</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-black dark:text-white">{expenseCount}</div>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Total count</p>
             </CardContent>
           </Card>
         </div>
@@ -247,10 +277,10 @@ export default function Home() {
               <CardTitle className="text-lg font-semibold text-black dark:text-white">Daily Spending Trend</CardTitle>
             </CardHeader>
             <CardContent>
-              {barChartData.length > 0 ? (
+              {lineChartData.length > 0 ? (
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={barChartData}>
+                    <LineChart data={lineChartData}>
                       <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#374151' : '#e5e7eb'} />
                       <XAxis 
                         dataKey="date" 
@@ -271,18 +301,31 @@ export default function Home() {
                           borderRadius: '8px',
                           color: theme === 'dark' ? '#ffffff' : '#000000'
                         }}
-                        formatter={(value: number) => [`$${value.toFixed(2)}`, 'Amount']}
+                        formatter={(value: number, name) => [`$${value.toFixed(2)}`, name]}
                         labelStyle={{
                           color: theme === 'dark' ? '#ffffff' : '#000000'
                         }}
                       />
+                      <Legend />
+                      {/* You (Primary User) - Blue Line */}
                       <Line 
                         type="monotone" 
-                        dataKey="amount" 
-                        stroke={theme === 'dark' ? '#ffffff' : '#000000'}
+                        dataKey="You" 
+                        stroke="#3b82f6"
                         strokeWidth={3}
-                        dot={{ fill: theme === 'dark' ? '#ffffff' : '#000000', strokeWidth: 2, r: 4 }}
-                        activeDot={{ r: 6, stroke: theme === 'dark' ? '#ffffff' : '#000000', strokeWidth: 2 }}
+                        dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
+                        name="You"
+                      />
+                      {/* Sarah (Girlfriend) - Red Line */}
+                      <Line 
+                        type="monotone" 
+                        dataKey="Sarah" 
+                        stroke="#ef4444"
+                        strokeWidth={3}
+                        dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                        activeDot={{ r: 6, stroke: '#ef4444', strokeWidth: 2 }}
+                        name="Sarah"
                       />
                     </LineChart>
                   </ResponsiveContainer>
@@ -308,7 +351,10 @@ export default function Home() {
                   No expenses found. Add your first expense!
                 </div>
               ) : (
-                expenses.slice(0, 5).map((expense) => {
+                expenses
+                  .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                  .slice(0, 10)
+                  .map((expense) => {
                   const getCategoryIcon = (category: string) => {
                     switch (category) {
                       case 'food': return '🍽️'

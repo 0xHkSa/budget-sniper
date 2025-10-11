@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { parseSMS } from '@/lib/sms-parser'
-import { supabase } from '@/lib/supabase'
+import { addMockExpense } from '@/lib/mock-data'
 
 // POST /api/webhook/sms - Twilio webhook endpoint
 export async function POST(request: NextRequest) {
@@ -29,35 +29,15 @@ export async function POST(request: NextRequest) {
       return new Response(`Failed to parse message: ${parsed.error}`, { status: 400 })
     }
     
-    // Get the first household ID (for now, we'll use the test household)
-    const { data: households } = await supabase
-      .from('households')
-      .select('id')
-      .limit(1)
-    
-    if (!households || households.length === 0) {
-      console.error('No household found')
-      return new Response('No household found', { status: 404 })
-    }
-    
-    // Save expense to database
-    const { data: newExpense, error } = await supabase
-      .from('expenses')
-      .insert({
-        household_id: households[0].id,
-        amount: parsed.amount,
-        merchant: parsed.merchant,
-        category: 'uncategorized', // We'll add AI categorization later
-        phone_number: fromNumber,
-        raw_message: messageBody
-      })
-      .select()
-      .single()
-    
-    if (error) {
-      console.error('Database error:', error)
-      return new Response('Failed to save expense', { status: 500 })
-    }
+    // TEMPORARY: Use mock data for testing
+    const newExpense = addMockExpense({
+      amount: parsed.amount,
+      merchant: parsed.merchant,
+      category: 'uncategorized',
+      phone_number: fromNumber,
+      raw_message: messageBody,
+      date: new Date().toISOString()
+    })
     
     console.log('Expense saved:', newExpense)
     
